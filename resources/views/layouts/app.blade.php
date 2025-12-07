@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html
-  lang="en"
+  lang="id"
   class="light-style layout-menu-fixed"
   dir="ltr"
   data-theme="theme-default"
@@ -189,6 +189,16 @@
                 <div data-i18n="Laporan">Laporan Keuangan</div>
               </a>
             </li>
+
+            <li class="menu-header small text-uppercase">
+              <span class="menu-header-text">Pengaturan</span>
+            </li>
+            <li class="menu-item {{ request()->is('users*') ? 'active' : '' }}">
+              <a href="{{ route('users.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-user"></i>
+                <div data-i18n="Users">Manajemen Pengguna</div>
+              </a>
+            </li>
           </ul>
         </aside>
         <!-- / Menu -->
@@ -226,8 +236,8 @@
                             </div>
                           </div>
                           <div class="flex-grow-1">
-                            <span class="fw-semibold d-block">John Doe</span>
-                            <small class="text-muted">Admin</small>
+                            <span class="fw-semibold d-block">{{ auth()->user()->nama }}</span>
+                            <small class="text-muted">{{ auth()->user()->peran }}</small>
                           </div>
                         </div>
                       </a>
@@ -238,17 +248,20 @@
                     <li>
                       <a class="dropdown-item" href="#">
                         <i class="bx bx-user me-2"></i>
-                        <span class="align-middle">My Profile</span>
+                        <span class="align-middle">Profil Saya</span>
                       </a>
                     </li>
                     <li>
                       <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="#">
-                        <i class="bx bx-power-off me-2"></i>
-                        <span class="align-middle">Log Out</span>
-                      </a>
+                      <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="dropdown-item">
+                            <i class="bx bx-power-off me-2"></i>
+                            <span class="align-middle">Keluar</span>
+                        </button>
+                      </form>
                     </li>
                   </ul>
                 </li>

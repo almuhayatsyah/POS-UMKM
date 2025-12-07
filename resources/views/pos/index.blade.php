@@ -33,7 +33,11 @@
                         <div class="card h-100 product-card" onclick="openOptionsModal({{ json_encode($item) }})">
                             <div class="card-body text-center">
                                 <div class="avatar avatar-xl mx-auto mb-3">
-                                    <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-coffee"></i></span>
+                                    @if($item->url_gambar)
+                                        <img src="{{ asset('storage/' . $item->url_gambar) }}" alt="{{ $item->nama_produk }}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">
+                                    @else
+                                        <span class="avatar-initial rounded-circle bg-label-primary"><i class="bx bx-coffee"></i></span>
+                                    @endif
                                 </div>
                                 <h5 class="card-title">{{ $item->nama_produk }}</h5>
                                 
@@ -92,7 +96,7 @@
             <div class="card-body d-flex flex-column">
                 <div class="mb-3">
                     <label class="form-label">Nama Pelanggan</label>
-                    <input type="text" class="form-control" id="nama_pelanggan" placeholder="Optional">
+                    <input type="text" class="form-control" id="nama_pelanggan" placeholder="Opsional">
                 </div>
                 
                 <div class="flex-grow-1 overflow-auto mb-3" style="max-height: 400px;" id="cart-items">
@@ -298,7 +302,7 @@ function addToCartFromModal() {
 
     if (currentProduct.varian && currentProduct.varian.length > 0) {
         const selectedVariant = document.querySelector('input[name="variant_option"]:checked');
-        if (!selectedVariant) { alert('Pilih varian!'); return; }
+        if (!selectedVariant) { alert('Silakan pilih varian!'); return; }
         variantId = selectedVariant.value;
         variantName = selectedVariant.getAttribute('data-name');
         price += parseInt(selectedVariant.getAttribute('data-price'));

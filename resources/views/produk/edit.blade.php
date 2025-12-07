@@ -7,7 +7,7 @@
         <a href="{{ route('produk.index') }}" class="btn btn-outline-secondary btn-sm">Kembali</a>
     </div>
     <div class="card-body">
-        <form action="{{ route('produk.update', $produk->id) }}" method="POST">
+        <form action="{{ route('produk.update', $produk->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
@@ -20,6 +20,17 @@
                     <label class="form-label">Kategori</label>
                     <input type="text" class="form-control" name="kategori" value="{{ $produk->kategori }}">
                 </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Foto Produk (Menu)</label>
+                @if($produk->url_gambar)
+                    <div class="mb-2">
+                        <img src="{{ asset('storage/' . $produk->url_gambar) }}" alt="Foto Produk" class="img-thumbnail" style="max-height: 150px;">
+                    </div>
+                @endif
+                <input type="file" class="form-control" name="image" accept="image/*">
+                <div class="form-text">Format: JPG, PNG, GIF. Maks: 2MB. Kosongkan jika tidak ingin mengubah foto.</div>
             </div>
 
             <div class="form-check form-switch mb-3">

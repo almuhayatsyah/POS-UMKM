@@ -7,7 +7,7 @@
         <a href="{{ route('produk.index') }}" class="btn btn-outline-secondary btn-sm">Kembali</a>
     </div>
     <div class="card-body">
-        <form action="{{ route('produk.store') }}" method="POST">
+        <form action="{{ route('produk.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div class="row mb-3">
@@ -19,6 +19,12 @@
                     <label class="form-label">Kategori</label>
                     <input type="text" class="form-control" name="kategori" placeholder="Contoh: Minuman Coffee">
                 </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Foto Produk (Menu)</label>
+                <input type="file" class="form-control" name="image" accept="image/*">
+                <div class="form-text">Format: JPG, PNG, GIF. Maks: 2MB.</div>
             </div>
 
             <div class="form-check form-switch mb-3">

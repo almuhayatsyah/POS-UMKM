@@ -12,7 +12,7 @@
                 <div class="row mb-4">
                     <div class="col-sm-6">
                         <h6 class="mb-1">Informasi Pesanan:</h6>
-                        <p class="mb-1">Tanggal: <strong>{{ $pesanan->created_at->translatedFormat('l, d F Y H:i') }}</strong></p>
+                        <p class="mb-1">Tanggal: <strong>{{ $pesanan->created_at->isoFormat('dddd, D MMMM Y HH:mm') }}</strong></p>
                         <p class="mb-1">Pelanggan: <strong>{{ $pesanan->nama_pelanggan ?: 'Umum' }}</strong></p>
                         <p class="mb-1">Status: 
                             @if($pesanan->status_pesanan == 'SELESAI')

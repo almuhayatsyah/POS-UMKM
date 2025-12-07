@@ -38,15 +38,22 @@ class ProdukController extends Controller
             'resep.*.bahan_id' => 'required|exists:bahan_baku,id',
             'resep.*.jumlah' => 'required|numeric|min:0.001',
             'resep.*.scope' => 'nullable|string', // 'base' or 'variant_index_0', etc.
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
             DB::beginTransaction();
 
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('products', 'public');
+            }
+
             $produk = Produk::create([
                 'nama_produk' => $request->nama_produk,
                 'harga_jual' => $request->harga_jual ?? 0, // 0 if has variants
                 'kategori' => $request->kategori,
+                'url_gambar' => $imagePath,
                 'tersedia' => true,
             ]);
 
@@ -113,16 +120,27 @@ class ProdukController extends Controller
             'resep.*.bahan_id' => 'required|exists:bahan_baku,id',
             'resep.*.jumlah' => 'required|numeric|min:0.001',
             'resep.*.scope' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
             DB::beginTransaction();
 
-            $produk->update([
+            $dataToUpdate = [
                 'nama_produk' => $request->nama_produk,
                 'harga_jual' => $request->harga_jual ?? 0,
                 'kategori' => $request->kategori,
-            ]);
+            ];
+
+            if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($produk->url_gambar && \Illuminate\Support\Facades\Storage::disk('public')->exists($produk->url_gambar)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($produk->url_gambar);
+                }
+                $dataToUpdate['url_gambar'] = $request->file('image')->store('products', 'public');
+            }
+
+            $produk->update($dataToUpdate);
 
             // Handle Variants
             // Strategy: Delete all existing and recreate? Or smart sync?

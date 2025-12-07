@@ -20,7 +20,7 @@
             <tbody class="table-border-bottom-0">
                 @foreach ($riwayat as $item)
                 <tr>
-                    <td>{{ $item->created_at->translatedFormat('l, d F Y H:i') }}</td>
+                    <td>{{ $item->created_at->isoFormat('dddd, D MMMM Y HH:mm') }}</td>
                     <td><span class="badge bg-label-primary">{{ $item->nomor_antrian }}</span></td>
                     <td>{{ $item->nama_pelanggan ?: '-' }}</td>
                     <td>Rp {{ number_format($item->total_bayar, 0, ',', '.') }}</td>

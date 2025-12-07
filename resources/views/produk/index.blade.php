@@ -10,6 +10,7 @@
         <table class="table table-hover">
             <thead>
                 <tr>
+                    <th>Gambar</th>
                     <th>Nama Produk</th>
                     <th>Kategori</th>
                     <th>Harga Jual</th>
@@ -20,6 +21,15 @@
             <tbody class="table-border-bottom-0">
                 @foreach ($produk as $item)
                 <tr>
+                    <td>
+                        @if($item->url_gambar)
+                            <img src="{{ asset('storage/' . $item->url_gambar) }}" alt="Img" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
+                        @else
+                            <div class="avatar avatar-sm">
+                                <span class="avatar-initial rounded-circle bg-label-secondary"><i class="bx bx-image"></i></span>
+                            </div>
+                        @endif
+                    </td>
                     <td><strong>{{ $item->nama_produk }}</strong></td>
                     <td>{{ $item->kategori }}</td>
                     <td>Rp {{ number_format($item->harga_jual, 0, ',', '.') }}</td>

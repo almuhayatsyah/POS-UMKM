@@ -80,7 +80,7 @@
                     <tbody>
                         @forelse ($laporan as $item)
                         <tr>
-                            <td>{{ $item->created_at->translatedFormat('d M Y H:i') }}</td>
+                           <td>{{ $item->created_at->isoFormat('dddd, D MMMM Y HH:mm') }}</td>
                             <td><span class="badge bg-label-primary">{{ $item->nomor_antrian }}</span></td>
                             <td>{{ $item->nama_pelanggan ?: 'Umum' }}</td>
                             <td><span class="badge bg-success">LUNAS</span></td>

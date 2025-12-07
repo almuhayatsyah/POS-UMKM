@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html
   lang="id"
-  class="light-style layout-menu-fixed"
+  class="light-style layout-menu-fixed layout-navbar-fixed"
   dir="ltr"
   data-theme="theme-default"
   data-assets-path="{{ asset('assets/') }}"
@@ -116,7 +116,7 @@
                   </g>
                 </svg>
               </span>
-              <span class="app-brand-text demo menu-text fw-bolder ms-2">KAEF </span>
+              <span class="app-brand-text demo menu-text fw-bolder ms-2">POS UMKM</span>
             </a>
 
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
@@ -135,6 +135,7 @@
               </a>
             </li>
 
+            @if(auth()->user()->isAdmin())
             <!-- Inventori -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Inventori</span></li>
             
@@ -145,13 +146,6 @@
               </a>
             </li>
 
-            <li class="menu-item {{ request()->is('produk*') ? 'active' : '' }}">
-              <a href="{{ route('produk.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-coffee"></i>
-                <div data-i18n="Produk">Produk & Resep</div>
-              </a>
-            </li>
-
             <li class="menu-item {{ request()->is('topping*') ? 'active' : '' }}">
               <a href="{{ route('topping.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-layer"></i>
@@ -159,37 +153,56 @@
               </a>
             </li>
 
+            <li class="menu-item {{ request()->is('produk*') ? 'active' : '' }}">
+              <a href="{{ route('produk.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-coffee"></i>
+                <div data-i18n="Produk">Produk & Resep</div>
+              </a>
+            </li>
+            @endif
+
+          
+
             <!-- Transaksi -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Transaksi</span></li>
 
+            @if(auth()->user()->isAdmin() || auth()->user()->isKasir())
             <li class="menu-item {{ request()->routeIs('pos.index') ? 'active' : '' }}">
               <a href="{{ route('pos.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-cart-alt"></i>
                 <div data-i18n="Kasir">Kasir (POS)</div>
               </a>
             </li>
+            @endif
 
+            @if(auth()->user()->isAdmin() || auth()->user()->isDapur())
             <li class="menu-item {{ request()->routeIs('kitchen.index') ? 'active' : '' }}">
               <a href="{{ route('kitchen.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-dish"></i>
                 <div data-i18n="Dapur">Dapur (Kitchen)</div>
               </a>
             </li>
+            @endif
 
+            @if(auth()->user()->isAdmin() || auth()->user()->isKasir())
             <li class="menu-item {{ request()->is('riwayat*') ? 'active' : '' }}">
               <a href="{{ route('riwayat.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-history"></i>
                 <div data-i18n="Riwayat">Riwayat Pembelian</div>
               </a>
             </li>
+            @endif
 
+            @if(auth()->user()->isAdmin())
             <li class="menu-item {{ request()->is('laporan*') ? 'active' : '' }}">
               <a href="{{ route('laporan.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-bar-chart-alt-2"></i>
                 <div data-i18n="Laporan">Laporan Keuangan</div>
               </a>
             </li>
+            @endif
 
+            @if(auth()->user()->isAdmin())
             <li class="menu-header small text-uppercase">
               <span class="menu-header-text">Pengaturan</span>
             </li>
@@ -199,6 +212,7 @@
                 <div data-i18n="Users">Manajemen Pengguna</div>
               </a>
             </li>
+            @endif
           </ul>
         </aside>
         <!-- / Menu -->
@@ -216,6 +230,32 @@
                 <i class="bx bx-menu bx-sm"></i>
               </a>
             </div>
+
+           <!-- Greeting & Clock -->
+<div class="navbar-nav align-items-center d-none d-md-flex">
+    <div class="nav-item d-flex align-items-center gap-3 px-2">
+        
+        <!-- Greeting -->
+        <div class="d-flex align-items-center">
+            <span class="fw-semibold fs-6">
+                Halo, <span class="fw-bold text-primary">{{ auth()->user()->nama }}</span>
+            </span>
+        </div>
+
+        <!-- Divider -->
+        <span class="text-muted">|</span>
+
+        <!-- Clock -->
+        <div class="d-flex align-items-center">
+            <i class="bi bi-clock me-2 text-muted"></i>
+            <span id="digital-clock" class="fw-semibold text-muted">
+                Loading...
+            </span>
+        </div>
+
+    </div>
+</div>
+
 
             <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
               <ul class="navbar-nav flex-row align-items-center ms-auto">
@@ -289,8 +329,11 @@
                   <script>
                     document.write(new Date().getFullYear());
                   </script>
-                  , made with ❤️ by
+                  , Developed by
                   <a href="https://almuhayatsyah.my.id" target="_blank" class="footer-link fw-bolder">almuhayatsyah</a>
+                </div>
+                <div>
+                  <span class="footer-link me-4">Aplikasi POS v.1.1</span>
                 </div>
               </div>
             </footer>
@@ -329,5 +372,74 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <!-- Global Success Modal -->
+    <div class="modal fade" id="globalSuccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body text-center py-5">
+                    <div class="display-1 text-success mb-3"><i class='bx bx-check-circle'></i></div>
+                    <h4>Berhasil!</h4>
+                    <p class="mb-4" id="globalSuccessMessage">{{ session('success') }}</p>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menghapus data ini? Data yang dihapus tidak dapat dikembalikan.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                    <form id="deleteForm" method="POST" action="">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Scripts -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          @if(session('success'))
+              var successModal = new bootstrap.Modal(document.getElementById('globalSuccessModal'));
+              successModal.show();
+          @endif
+          
+          updateClock();
+          setInterval(updateClock, 1000);
+      });
+
+      function updateClock() {
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = now.toLocaleDateString('id-ID', options);
+        const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        const clockEl = document.getElementById('digital-clock');
+        if(clockEl) {
+            clockEl.innerHTML = `<i class='bx bx-calendar-alt me-1'></i> ${dateStr} <i class='bx bx-time ms-2 me-1'></i> ${timeStr}`;
+        }
+      }
+
+      function confirmDelete(url) {
+        var form = document.getElementById('deleteForm');
+        form.action = url;
+        var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+      }
+    </script>
   </body>
 </html>

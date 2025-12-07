@@ -22,4 +22,19 @@ class Pengguna extends Authenticatable
     {
         return $this->hasMany(Pesanan::class, 'pengguna_id');
     }
+
+    public function isAdmin()
+    {
+        return $this->peran === 'ADMIN';
+    }
+
+    public function isKasir()
+    {
+        return $this->peran === 'KASIR';
+    }
+
+    public function isDapur()
+    {
+        return $this->peran === 'DAPUR';
+    }
 }

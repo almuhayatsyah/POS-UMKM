@@ -19,41 +19,48 @@
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0">
-                @foreach ($produk as $item)
-                <tr>
-                    <td>
-                        @if($item->url_gambar)
-                            <img src="{{ asset('storage/' . $item->url_gambar) }}" alt="Img" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
-                        @else
-                            <div class="avatar avatar-sm">
-                                <span class="avatar-initial rounded-circle bg-label-secondary"><i class="bx bx-image"></i></span>
-                            </div>
-                        @endif
-                    </td>
-                    <td><strong>{{ $item->nama_produk }}</strong></td>
-                    <td>{{ $item->kategori }}</td>
-                    <td>Rp {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
-                    <td>
-                        <span class="badge {{ $item->tersedia ? 'bg-label-success' : 'bg-label-secondary' }}">
-                            {{ $item->tersedia ? 'Tersedia' : 'Habis' }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('produk.edit', $item->id) }}" class="btn btn-sm btn-icon btn-outline-primary" title="Edit">
-                                <i class="bx bx-edit-alt"></i>
-                            </a>
-                            <form action="{{ route('produk.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-icon btn-outline-danger" title="Hapus">
+                @forelse ($produkByKategori as $kategori => $group)
+                    <tr class="table-light">
+                        <td colspan="6" class="fw-bold text-uppercase ps-3">
+                            <i class="bx bx-category me-2"></i> {{ $kategori ?: 'Tanpa Kategori' }}
+                        </td>
+                    </tr>
+                    @foreach ($group as $item)
+                    <tr>
+                        <td class="ps-4">
+                            @if($item->url_gambar)
+                                <img src="{{ asset('storage/' . $item->url_gambar) }}" alt="Img" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
+                            @else
+                                <div class="avatar avatar-sm">
+                                    <span class="avatar-initial rounded-circle bg-label-secondary"><i class="bx bx-image"></i></span>
+                                </div>
+                            @endif
+                        </td>
+                        <td><strong>{{ $item->nama_produk }}</strong></td>
+                        <td>{{ $item->kategori }}</td>
+                        <td>Rp {{ number_format($item->harga_jual, 0, ',', '.') }}</td>
+                        <td>
+                            <span class="badge {{ $item->tersedia ? 'bg-label-success' : 'bg-label-secondary' }}">
+                                {{ $item->tersedia ? 'Tersedia' : 'Habis' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('produk.edit', $item->id) }}" class="btn btn-sm btn-icon btn-outline-primary" title="Edit">
+                                    <i class="bx bx-edit-alt"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-icon btn-outline-danger" onclick="confirmDelete('{{ route('produk.destroy', $item->id) }}')" title="Hapus">
                                     <i class="bx bx-trash"></i>
                                 </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center py-5">Belum ada data produk.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>

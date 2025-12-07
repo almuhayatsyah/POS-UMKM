@@ -27,11 +27,25 @@
         <div class="tab-content p-0">
             <!-- New Order Tab -->
             <div class="tab-pane fade show active" id="navs-order" role="tabpanel">
-                <div class="row">
-                    @foreach ($produk as $item)
-                    <div class="col-md-4 mb-4">
+                
+                <!-- Category Filter -->
+                <div class="d-flex overflow-auto mb-3 pb-2" style="white-space: nowrap;">
+                    <button type="button" class="btn btn-primary rounded-pill me-2 filter-btn active" data-filter="all" onclick="filterCategory('all')">
+                        <i class="bx bx-grid-alt me-1"></i> Semua
+                    </button>
+                    @foreach ($categories as $cat)
+                        <button type="button" class="btn btn-outline-secondary rounded-pill me-2 filter-btn" data-filter="{{ Str::slug($cat) }}" onclick="filterCategory('{{ Str::slug($cat) }}')">
+                            {{ $cat }}
+                        </button>
+                    @endforeach
+                </div>
+
+                <div class="row" id="product-grid">
+                    @foreach ($products as $item)
+                    <div class="col-md-4 mb-4 product-item" data-category="{{ Str::slug($item->kategori) }}">
                         <div class="card h-100 product-card" onclick="openOptionsModal({{ json_encode($item) }})">
                             <div class="card-body text-center">
+                                <span class="badge bg-label-secondary position-absolute top-0 end-0 m-2">{{ $item->kategori ?: 'Lainnya' }}</span>
                                 <div class="avatar avatar-xl mx-auto mb-3">
                                     @if($item->url_gambar)
                                         <img src="{{ asset('storage/' . $item->url_gambar) }}" alt="{{ $item->nama_produk }}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">
@@ -194,12 +208,34 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="text-center mb-4">
+                    <div class="text-center mb-3">
                         <h3 class="mb-1" id="pay-queue">A-001</h3>
-                        <div class="display-4 text-primary fw-bold" id="pay-amount">Rp 0</div>
+                        <div class="display-5 text-primary fw-bold" id="pay-amount">Rp 0</div>
+                        <input type="hidden" id="pay-amount-raw">
                     </div>
                     <input type="hidden" id="pay-id">
-                    <p class="text-center">Pastikan uang tunai / pembayaran telah diterima.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nominal Bayar</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text">Rp</span>
+                            <input type="number" class="form-control" id="nominal_bayar" placeholder="0" oninput="calculateChange()">
+                        </div>
+                    </div>
+
+                    <div class="mb-3 text-center">
+                        <div class="btn-group w-100 mb-2" role="group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="setPayment('exact')">Uang Pas</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setPayment(20000)">20k</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setPayment(50000)">50k</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setPayment(100000)">100k</button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Kembalian:</span>
+                        <span class="fs-4 fw-bold" id="change-amount">Rp 0</span>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
@@ -248,6 +284,28 @@ document.addEventListener('DOMContentLoaded', function() {
     optionsModal = new bootstrap.Modal(document.getElementById('optionsModal'));
     successModal = new bootstrap.Modal(document.getElementById('successModal'));
 });
+
+function filterCategory(category) {
+    // 1. Update Buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('btn-primary', 'active');
+        btn.classList.add('btn-outline-secondary');
+        if(btn.getAttribute('data-filter') === category) {
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-primary', 'active');
+        }
+    });
+
+    // 2. Filter Items
+    const items = document.querySelectorAll('.product-item');
+    items.forEach(item => {
+        if (category === 'all' || item.getAttribute('data-category') === category) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
 
 // ... (Existing functions: openOptionsModal, updateModalTotal, addToCartFromModal, updateCartUI, changeQty) ...
 // I will copy them here to ensure they are present, but for brevity in this tool call I'll assume I need to rewrite the whole script block or just the changed parts.
@@ -432,20 +490,62 @@ function processExistingPayment(id, queue, amount) {
     document.getElementById('pay-id').value = id;
     document.getElementById('pay-queue').innerText = queue;
     document.getElementById('pay-amount').innerText = 'Rp ' + parseInt(amount).toLocaleString();
+    document.getElementById('pay-amount-raw').value = amount;
     
+    // Reset inputs
+    document.getElementById('nominal_bayar').value = '';
+    document.getElementById('change-amount').innerText = 'Rp 0';
+    document.getElementById('change-amount').parentElement.className = 'alert alert-secondary d-flex justify-content-between align-items-center';
+
     const modalEl = document.getElementById('paymentModal');
     paymentModal = new bootstrap.Modal(modalEl);
     paymentModal.show();
+    
+    // Focus after modal shown
+    setTimeout(() => document.getElementById('nominal_bayar').focus(), 500);
+}
+
+function calculateChange() {
+    const total = parseInt(document.getElementById('pay-amount-raw').value) || 0;
+    const paid = parseInt(document.getElementById('nominal_bayar').value) || 0;
+    const change = paid - total;
+    
+    const changeEl = document.getElementById('change-amount');
+    const alertEl = changeEl.parentElement;
+    const btnConfirm = document.querySelector('#paymentModal .btn-success');
+    
+    changeEl.innerText = 'Rp ' + change.toLocaleString();
+    
+    if (change < 0) {
+        alertEl.classList.remove('alert-success');
+        alertEl.classList.add('alert-danger');
+        btnConfirm.disabled = true;
+    } else {
+        alertEl.classList.remove('alert-danger');
+        alertEl.classList.add('alert-success');
+        btnConfirm.disabled = false;
+    }
+}
+
+function setPayment(amount) {
+    if (amount === 'exact') {
+        amount = document.getElementById('pay-amount-raw').value;
+    }
+    document.getElementById('nominal_bayar').value = amount;
+    calculateChange();
 }
 
 function confirmPayment() {
     const id = document.getElementById('pay-id').value;
     const queue = document.getElementById('pay-queue').innerText;
+    const nominal = document.getElementById('nominal_bayar').value;
+
     if(paymentModal) paymentModal.hide();
 
     fetch(`/pos/pay/${id}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ nominal_bayar: nominal })
     })
     .then(async response => {
         const data = await response.json();

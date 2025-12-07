@@ -29,7 +29,10 @@
                     </td>
                     <td>{{ $item->satuan }}</td>
                     <td>Rp {{ number_format($item->harga_beli_terakhir, 0, ',', '.') }}</td>
-                    <td>{{ $item->stok_minimum }}</td>
+                    <td>{{ $item->stok_minimum }}
+                         <p class="text-muted mb-0">Satuan: {{ $item->satuan }}</p>
+                    </td>
+                    <td>{{ $item->created_at->format('d M Y') }}</td>
                     <td>
                         <div class="d-flex gap-2">
                             <a href="{{ route('bahan-baku.show', $item->id) }}" class="btn btn-sm btn-icon btn-outline-info" title="Detail & Monitoring">

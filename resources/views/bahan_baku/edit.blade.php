@@ -29,6 +29,7 @@
                             <option value="PCS" {{ $bahanBaku->satuan == 'PCS' ? 'selected' : '' }}>Pcs/Buah</option>
                             <option value="KALENG" {{ $bahanBaku->satuan == 'KALENG' ? 'selected' : '' }}>Kaleng</option>
                         </select>
+                        <div class="form-text text-primary"><i class="bx bx-info-circle"></i> Disarankan menggunakan satuan terkecil (Contoh: <strong>GRAM</strong> atau <strong>ML</strong>) agar pengurangan stok lebih akurat saat transaksi.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="harga_beli_terakhir">Harga Beli (Per Satuan)</label>

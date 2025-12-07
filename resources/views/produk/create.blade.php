@@ -7,28 +7,45 @@
         <a href="{{ route('produk.index') }}" class="btn btn-outline-secondary btn-sm">Kembali</a>
     </div>
     <div class="card-body">
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible" role="alert">
+                <i class="bx bx-error-circle me-1"></i> Terdapat kesalahan pada input Anda. Silakan periksa kembali.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible" role="alert">
+                <i class="bx bx-error-circle me-1"></i> {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <form action="{{ route('produk.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Nama Produk</label>
-                    <input type="text" class="form-control" name="nama_produk" required placeholder="Contoh: Kopi Susu Gula Aren">
+                    <input type="text" class="form-control @error('nama_produk') is-invalid @enderror" name="nama_produk" required value="{{ old('nama_produk') }}" placeholder="Contoh: Kopi Susu Gula Aren">
+                    @error('nama_produk') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Kategori</label>
-                    <input type="text" class="form-control" name="kategori" placeholder="Contoh: Minuman Coffee">
+                    <input type="text" class="form-control @error('kategori') is-invalid @enderror" name="kategori" value="{{ old('kategori') }}" placeholder="Contoh: Minuman Coffee">
+                    @error('kategori') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label">Foto Produk (Menu)</label>
-                <input type="file" class="form-control" name="image" accept="image/*">
+                <input type="file" class="form-control @error('image') is-invalid @enderror" name="image" accept="image/*">
                 <div class="form-text">Format: JPG, PNG, GIF. Maks: 2MB.</div>
+                @error('image') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
             <div class="form-check form-switch mb-3">
-                <input class="form-check-input" type="checkbox" id="hasVariants" onchange="toggleVariants()">
+                <input class="form-check-input" type="checkbox" id="hasVariants" onchange="toggleVariants()" {{ old('variants') ? 'checked' : '' }}>
                 <label class="form-check-label" for="hasVariants">Produk memiliki varian (ukuran/tipe)?</label>
             </div>
 
@@ -37,7 +54,8 @@
                 <label class="form-label">Harga Jual</label>
                 <div class="input-group">
                     <span class="input-group-text">Rp</span>
-                    <input type="number" class="form-control" name="harga_jual" id="harga_jual_input" min="0" placeholder="0">
+                    <input type="number" class="form-control @error('harga_jual') is-invalid @enderror" name="harga_jual" id="harga_jual_input" min="0" value="{{ old('harga_jual') }}" placeholder="0">
+                    @error('harga_jual') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
             </div>
 
@@ -60,6 +78,9 @@
                     <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addVariantRow()">
                         <i class="bx bx-plus"></i> Tambah Varian
                     </button>
+                    @if($errors->has('variants')) 
+                        <div class="text-danger small mt-1">{{ $errors->first('variants') }}</div>
+                    @endif
                 </div>
             </div>
 
@@ -74,7 +95,7 @@
                         <tr>
                             <th style="width: 30%;">Bahan Baku</th>
                             <th style="width: 25%;">Untuk Varian</th>
-                            <th style="width: 20%;">Jumlah</th>
+                            <th style="width: 20%;">Jumlah <i class="bx bx-info-circle text-primary" title="Sesuaikan dengan satuan bahan baku (Misal: Gram)"></i></th>
                             <th style="width: 10%;">Satuan</th>
                             <th style="width: 10%;">Aksi</th>
                         </tr>
@@ -97,6 +118,10 @@
     let variantCount = 0;
     let resepCount = 0;
     const bahanBakuList = @json($bahanBaku);
+    
+    // Get old input from Laravel
+    const oldVariants = @json(old('variants', []));
+    const oldResep = @json(old('resep', []));
 
     function toggleVariants() {
         const hasVariants = document.getElementById('hasVariants').checked;
@@ -109,28 +134,35 @@
             variantsDiv.style.display = 'block';
             hargaInput.value = ''; 
             hargaInput.required = false;
-            if (variantCount === 0) addVariantRow(); // Add one row by default
+            
+            // Only add default row if count is 0 AND we are not repopulating
+            if (variantCount === 0 && oldVariants.length === 0) {
+                addVariantRow(); 
+            }
         } else {
             singlePriceDiv.style.display = 'block';
             variantsDiv.style.display = 'none';
             hargaInput.required = true;
-            document.querySelector('#variantsTable tbody').innerHTML = '';
-            variantCount = 0;
+            // Only clear if user manually toggles off, not on init (though users unlikely to toggle off after error)
+            // But we should be careful. For now, let's leave it.
         }
         updateResepScopeOptions();
     }
 
-    function addVariantRow() {
+    function addVariantRow(data = null) {
         const table = document.querySelector('#variantsTable tbody');
+        const nama = data ? data.nama : '';
+        const harga = data ? data.harga : '';
+        
         const row = `
             <tr id="variant-row-${variantCount}">
                 <td>
-                    <input type="text" class="form-control variant-name" name="variants[${variantCount}][nama]" placeholder="Nama Varian" required oninput="updateResepScopeOptions()">
+                    <input type="text" class="form-control variant-name" name="variants[${variantCount}][nama]" placeholder="Nama Varian" required oninput="updateResepScopeOptions()" value="${nama}">
                 </td>
                 <td>
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>
-                        <input type="number" class="form-control" name="variants[${variantCount}][harga]" placeholder="0" required min="0">
+                        <input type="number" class="form-control" name="variants[${variantCount}][harga]" placeholder="0" required min="0" value="${harga}">
                     </div>
                 </td>
                 <td>
@@ -150,11 +182,17 @@
         updateResepScopeOptions();
     }
 
-    function addResepRow() {
+    function addResepRow(data = null) {
         const table = document.querySelector('#resepTable tbody');
         let options = '<option value="">Pilih Bahan</option>';
+        
+        const selectedBahanId = data ? data.bahan_id : '';
+        const selectedScope = data ? data.scope : '';
+        const jumlah = data ? data.jumlah : '';
+        
         bahanBakuList.forEach(bahan => {
-            options += `<option value="${bahan.id}" data-satuan="${bahan.satuan}">${bahan.nama_bahan} (Stok: ${bahan.stok_saat_ini})</option>`;
+            const selected = (bahan.id == selectedBahanId) ? 'selected' : '';
+            options += `<option value="${bahan.id}" data-satuan="${bahan.satuan}" ${selected}>${bahan.nama_bahan} (Stok: ${bahan.stok_saat_ini})</option>`;
         });
 
         const row = `
@@ -165,12 +203,12 @@
                     </select>
                 </td>
                 <td>
-                    <select class="form-select scope-select" name="resep[${resepCount}][scope]">
+                    <select class="form-select scope-select" name="resep[${resepCount}][scope]" data-selected="${selectedScope}">
                         <!-- Options populated via JS -->
                     </select>
                 </td>
                 <td>
-                    <input type="number" class="form-control" name="resep[${resepCount}][jumlah]" step="0.001" min="0.001" required placeholder="0">
+                    <input type="number" class="form-control" name="resep[${resepCount}][jumlah]" step="0.001" min="0.001" required placeholder="0" value="${jumlah}">
                 </td>
                 <td>
                     <span id="satuan-${resepCount}" class="text-muted">-</span>
@@ -184,6 +222,12 @@
         `;
         table.insertAdjacentHTML('beforeend', row);
         
+        // Update satuan text immediately if value exists
+        if(selectedBahanId) {
+             const selectEl = table.lastElementChild.querySelector('select[name*="bahan_id"]');
+             updateSatuan(resepCount, selectEl);
+        }
+
         // Populate scope options for this new row
         const newSelect = table.lastElementChild.querySelector('.scope-select');
         populateScopeOptions(newSelect);
@@ -204,9 +248,9 @@
     function updateResepScopeOptions() {
         const selects = document.querySelectorAll('.scope-select');
         selects.forEach(select => {
-            const currentVal = select.value;
+            const currentVal = select.value || select.getAttribute('data-selected');
             populateScopeOptions(select);
-            select.value = currentVal; // Try to keep selection
+            if(currentVal) select.value = currentVal; 
         });
     }
 
@@ -216,18 +260,12 @@
 
         if (!hasVariants) {
             select.innerHTML = '<option value="base" selected>Produk Dasar</option>';
-            select.disabled = true; // Lock to base if no variants
-            // Note: We still send 'base' or handle null in controller
+            // select.disabled = true; // Don't disable, just force value
         } else {
             select.disabled = false;
-            // Add Base option (maybe common ingredients?)
-            // For now, let's force user to choose variant if variants exist to avoid ambiguity
-            // Or allow "Semua Varian" if we want to support that later.
-            // Let's stick to specific variants for now.
             
             const variantRows = document.querySelectorAll('#variantsTable tbody tr');
             variantRows.forEach((row, index) => {
-                // Extract the index from the row ID "variant-row-X"
                 const rowId = row.id;
                 const variantIndex = rowId.replace('variant-row-', '');
                 const nameInput = row.querySelector('.variant-name');
@@ -245,8 +283,31 @@
         }
     }
 
-    // Initialize
-    addResepRow();
-    toggleVariants();
+    // Initialize logic
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Restore Variants First
+        if (oldVariants && Object.keys(oldVariants).length > 0) {
+             Object.values(oldVariants).forEach(v => {
+                 addVariantRow(v);
+             });
+             // Ensure checkboxes and display are correct
+             document.getElementById('hasVariants').checked = true;
+             toggleVariants(); 
+        } else {
+             toggleVariants(); // Will add default row if no variants
+        }
+
+        // 2. Restore Recipes
+        if (oldResep && Object.keys(oldResep).length > 0) {
+             Object.values(oldResep).forEach(r => {
+                 addResepRow(r);
+             });
+        } else {
+             addResepRow(); // Default empty row
+        }
+        
+        // 3. Trigger scope update one last time to sync names
+        updateResepScopeOptions();
+    });
 </script>
 @endsection

@@ -22,7 +22,7 @@ class PrinterController extends Controller
 
             // Header
             $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->text("KAEF COFFEE\n");
+            $printer->text("UMKM COFFEE\n");
             $printer->text("Jl. Contoh No. 123, Indonesia\n");
             $printer->text("--------------------------------\n");
 
@@ -59,6 +59,11 @@ class PrinterController extends Controller
             // Total
             $printer->setJustification(Printer::JUSTIFY_RIGHT);
             $printer->text("TOTAL: Rp " . number_format($pesanan->total_bayar, 0, ',', '.') . "\n");
+            
+            if ($pesanan->nominal_bayar) {
+                $printer->text("BAYAR: Rp " . number_format($pesanan->nominal_bayar, 0, ',', '.') . "\n");
+                $printer->text("KEMBALI: Rp " . number_format($pesanan->kembalian, 0, ',', '.') . "\n");
+            }
             
             // Footer
             $printer->setJustification(Printer::JUSTIFY_CENTER);

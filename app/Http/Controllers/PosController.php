@@ -17,14 +17,22 @@ class PosController extends Controller
 {
     public function index()
     {
-        $produk = Produk::with('varian')->where('tersedia', true)->get();
+        $products = Produk::with(['varian', 'resep'])->where('tersedia', true)->get();
+        // Get unique categories, filter out nulls/empty
+        $categories = Produk::where('tersedia', true)
+                            ->whereNotNull('kategori')
+                            ->where('kategori', '!=', '')
+                            ->distinct()
+                            ->pluck('kategori');
+                            
+        // Global variables for cart/payment
         $toppings = Topping::all();
         // Get pending orders (Unpaid)
         $pendingOrders = Pesanan::where('status_pembayaran', 'BELUM_LUNAS')
             ->orderBy('created_at', 'desc')
             ->get();
             
-        return view('pos.index', compact('produk', 'toppings', 'pendingOrders'));
+        return view('pos.index', compact('products', 'categories', 'toppings', 'pendingOrders'));
     }
 
     public function store(Request $request)
@@ -130,7 +138,7 @@ class PosController extends Controller
         }
     }
 
-    public function pay($id)
+    public function pay($id, Request $request)
     {
         try {
             $pesanan = Pesanan::find($id);
@@ -138,8 +146,19 @@ class PosController extends Controller
                 return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan'], 404);
             }
 
+            $nominal = $request->input('nominal_bayar');
+            
+            // Optional: validation if nominal is enough (frontend should handle, but backend check is good)
+            if ($nominal < $pesanan->total_bayar) {
+                return response()->json(['success' => false, 'message' => 'Uang pembayaran kurang!'], 400);
+            }
+
+            $kembalian = $nominal - $pesanan->total_bayar;
+
+            $pesanan->nominal_bayar = $nominal;
+            $pesanan->kembalian = $kembalian;
             $pesanan->status_pembayaran = 'LUNAS';
-            $pesanan->status_pesanan = 'SELESAI'; // Assuming payment closes the loop
+            $pesanan->status_pesanan = 'SELESAI'; 
             $pesanan->save();
 
             return response()->json(['success' => true, 'message' => 'Pembayaran berhasil!']);

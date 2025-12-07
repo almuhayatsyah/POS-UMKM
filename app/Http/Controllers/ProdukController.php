@@ -12,8 +12,8 @@ class ProdukController extends Controller
 {
     public function index()
     {
-        $produk = Produk::all();
-        return view('produk.index', compact('produk'));
+        $produkByKategori = Produk::orderBy('kategori')->orderBy('nama_produk')->get()->groupBy('kategori');
+        return view('produk.index', compact('produkByKategori'));
     }
 
     public function create()

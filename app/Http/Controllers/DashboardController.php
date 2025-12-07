@@ -47,10 +47,19 @@ class DashboardController extends Controller
         // 5. Produk Terlaris (Top 5)
         $topProducts = DB::table('detail_pesanan')
             ->join('produk', 'detail_pesanan.produk_id', '=', 'produk.id')
-            ->select('produk.nama_produk', DB::raw('SUM(detail_pesanan.jumlah) as total_sold'))
-            ->groupBy('produk.id', 'produk.nama_produk')
+            ->select('produk.nama_produk', 'produk.url_gambar', DB::raw('SUM(detail_pesanan.jumlah) as total_sold'))
+            ->groupBy('produk.id', 'produk.nama_produk', 'produk.url_gambar')
             ->orderByDesc('total_sold')
             ->limit(5)
+            ->get();
+
+        // 6. Penjualan per Kategori (Pie Chart)
+        $categorySales = DB::table('detail_pesanan')
+            ->join('produk', 'detail_pesanan.produk_id', '=', 'produk.id')
+            ->join('pesanan', 'detail_pesanan.pesanan_id', '=', 'pesanan.id')
+            ->where('pesanan.status_pembayaran', 'LUNAS')
+            ->select('produk.kategori', DB::raw('SUM(detail_pesanan.subtotal_item) as total_revenue'))
+            ->groupBy('produk.kategori')
             ->get();
 
         return view('dashboard.index', compact(
@@ -59,7 +68,8 @@ class DashboardController extends Controller
             'allStockItems', 
             'salesChart', 
             'recentOrders',
-            'topProducts'
+            'topProducts',
+            'categorySales'
         ));
     }
 }

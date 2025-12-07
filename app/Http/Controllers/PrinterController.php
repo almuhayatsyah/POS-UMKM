@@ -17,7 +17,8 @@ class PrinterController extends Controller
 
             // Ganti nama printer sesuai dengan share name di Windows
             // Caranya: Control Panel -> Devices and Printers -> Klik Kanan Printer -> Printer Properties -> Sharing -> Share Name
-            $connector = new WindowsPrintConnector("POS-58"); 
+            $printerName = env('PRINTER_NAME', 'POS-58');
+            $connector = new WindowsPrintConnector($printerName); 
             $printer = new Printer($connector);
 
             // Header
@@ -79,5 +80,12 @@ class PrinterController extends Controller
         } catch (Exception $e) {
             return response()->json(['success' => false, 'message' => 'Gagal mencetak: ' . $e->getMessage()], 500);
         }
+
+    }
+
+    public function showStruk($id)
+    {
+        $pesanan = Pesanan::with(['detailPesanan.produk', 'detailPesanan.produkVarian'])->findOrFail($id);
+        return view('pos.struk', compact('pesanan'));
     }
 }

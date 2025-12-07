@@ -17,6 +17,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/pos/pay/{id}', [\App\Http\Controllers\PosController::class, 'pay'])->name('pos.pay');
         Route::post('/pos/status/{id}', [\App\Http\Controllers\PosController::class, 'updateStatus'])->name('pos.updateStatus');
         Route::post('/pos/print/{id}', [\App\Http\Controllers\PrinterController::class, 'printBill'])->name('pos.print');
+        Route::get('/pos/struk/{id}', [\App\Http\Controllers\PrinterController::class, 'showStruk'])->name('pos.struk');
         
         Route::get('/riwayat', [\App\Http\Controllers\RiwayatController::class, 'index'])->name('riwayat.index');
         Route::get('/riwayat/{id}', [\App\Http\Controllers\RiwayatController::class, 'show'])->name('riwayat.show');

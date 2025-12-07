@@ -44,6 +44,7 @@
                                 <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-icon btn-outline-warning">
                                     <i class="bx bx-edit-alt"></i>
                                 </a>
+                                @if($user->id !== auth()->id())
                                 <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
                                     @csrf
                                     @method('DELETE')
@@ -51,6 +52,7 @@
                                         <i class="bx bx-trash"></i>
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

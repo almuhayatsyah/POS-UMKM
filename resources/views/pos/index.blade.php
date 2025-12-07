@@ -260,7 +260,10 @@
                     <!-- Print Button Container -->
                     <div id="print-container" class="mt-3" style="display:none;">
                         <button class="btn btn-outline-secondary" onclick="printBill()">
-                            <i class="bx bx-printer me-1"></i> Cetak Struk
+                            <i class="bx bx-printer me-1"></i> Cetak (Server)
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="printStrukInternal()">
+                            <i class="bx bx-mobile me-1"></i> Cetak (Mobile/Layar)
                         </button>
                     </div>
                 </div>
@@ -599,6 +602,17 @@ function printBill() {
         btn.disabled = false;
         btn.innerHTML = originalText;
     });
+}
+
+function printStrukInternal() {
+    const id = document.getElementById('print-container').getAttribute('data-id');
+    const width = 450;
+    const height = 600;
+    const left = (screen.width - width) / 2;
+    const top = (screen.height - height) / 2;
+    
+    // Open popup for receipt
+    window.open(`/pos/struk/${id}`, 'Struk', `width=${width},height=${height},top=${top},left=${left}`);
 }
 </script>
 

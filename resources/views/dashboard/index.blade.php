@@ -132,7 +132,7 @@
     <div class="col-md-6 col-lg-4 order-2 mb-4">
         <div class="card h-100">
             <div class="card-header d-flex align-items-center justify-content-between">
-                <h5 class="card-title m-0 me-2">Produk Terlaris 🔥</h5>
+                <h5 class="card-title m-0 me-2">Best Seller 🔥</h5>
                 <a href="{{ route('produk.index') }}" class="small">Lihat Semua</a>
             </div>
             <div class="card-body">
